@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Analysis</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .tab {
+            display: none;
+        }
+        .tab.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <button onclick="openTab('clientOnboard')">Client Onboard</button>
+        <button onclick="openTab('transactionAnalysis')">Transaction Analysis</button>
+    </div>
+
+    <div id="clientOnboard" class="tab">
+        <h2>Client Onboard</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv">
+            <button type="submit">Upload CSV</button>
+        </form>
+        <div id="uploadResult"></div>
+    </div>
+
+    <div id="transactionAnalysis" class="tab">
+        <h2>Transaction Analysis</h2>
+        <select id="tableSelect">
+            {% for table in table_names %}
+            <option value="{{ table }}">{{ table }}</option>
+            {% endfor %}
+        </select>
+        <textarea id="queryInput" rows="4" cols="50" placeholder="Enter your query here..."></textarea>
+        <button onclick="analyzeTransaction()">Analyze</button>
+        <div id="analysisResult"></div>
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            $('.tab').removeClass('active');
+            $('#' + tabName).addClass('active');
+        }
+
+        $('#uploadForm').submit(function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+            $.ajax({
+                url: '/upload_csv',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#uploadResult').text(response.message);
+                },
+                error: function(xhr, status, error) {
+                    $('#uploadResult').text('Error: ' + xhr.responseJSON.error);
+                }
+            });
+        });
+
+        function analyzeTransaction() {
+            var tableName = $('#tableSelect').val();
+            var query = $('#queryInput').val();
+            $.ajax({
+                url: '/analyze_transaction',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({table_name: tableName, query: query}),
+                success: function(response) {
+                    $('#analysisResult').text(response.analysis);
+                },
+                error: function(xhr, status, error) {
+                    $('#analysisResult').text('Error: ' + xhr.responseJSON.error);
+                }
+            });
+        }
+
+        // Set the first tab as active by default
+        openTab('clientOnboard');
+    </script>
+</body>
+</html>
