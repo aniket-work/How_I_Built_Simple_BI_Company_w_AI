@@ -16,6 +16,30 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 # Initialize GroqLLM
 model = ChatGroq(model_name="mixtral-8x7b-32768", api_key=GROQ_API_KEY)
 
+
+def format_response_to_html_table(response):
+    # Split the response into lines
+    lines = response.split('\n')
+
+    # Assuming the first line contains headers
+    headers = lines[0].split()
+
+    # Start building the HTML table
+    html = "<table><tr>"
+    for header in headers:
+        html += f"<th>{header}</th>"
+    html += "</tr>"
+
+    # Add data rows
+    for line in lines[1:]:
+        html += "<tr>"
+        for cell in line.split():
+            html += f"<td>{cell}</td>"
+        html += "</tr>"
+
+    html += "</table>"
+    return html
+
 # Function to get table names
 def get_table_names():
     return [os.path.splitext(file)[0] for file in os.listdir(DATABASE_FOLDER) if file.endswith('.db')]
@@ -65,7 +89,52 @@ st.markdown("""
         text-decoration: none;
         padding: 10px;
     }
+    
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    
+    .dataframe {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .dataframe th, .dataframe td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    .dataframe th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    .dataframe tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .dataframe tr:hover {
+        background-color: #f5f5f5;
+    }
+    
 </style>
+""", unsafe_allow_html=True)
+
+# Custom HTML for favicon
+st.markdown("""
+    <head>
+        <link rel="icon" href="logo/logo.jpg" type="image/jpeg">
+    </head>
 """, unsafe_allow_html=True)
 
 # Navbar
@@ -112,6 +181,9 @@ st.header("Data Explorer")
 table_names = get_table_names()
 selected_table = st.selectbox("Select a dataset", table_names)
 
+def format_df_to_html_table(df):
+    return df.to_html(index=False, classes=['dataframe'], border=0)
+
 if selected_table:
     db_path = os.path.join(DATABASE_FOLDER, f'{selected_table}.db')
     sqlite_connector = SqliteConnector(config={"database": db_path, "table": selected_table})
@@ -123,7 +195,16 @@ if selected_table:
             with st.spinner("Analyzing data..."):
                 try:
                     response = df_connector.chat(prompt)
-                    st.markdown(f'<div class="card">{response}</div>', unsafe_allow_html=True)
+
+                    if isinstance(response, pd.DataFrame):
+                        # Format the DataFrame into an HTML table
+                        formatted_response = format_df_to_html_table(response)
+                    else:
+                        # If it's not a DataFrame, convert to string and wrap in a pre tag
+                        formatted_response = f"<pre>{str(response)}</pre>"
+
+                    # Display the formatted response
+                    st.markdown(f'<div class="card">{formatted_response}</div>', unsafe_allow_html=True)
 
                     # Check if a chart was generated
                     chart_path = "exports/charts/temp_chart.png"
