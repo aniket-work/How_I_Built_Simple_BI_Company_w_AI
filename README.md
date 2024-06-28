@@ -100,8 +100,8 @@ The project consists of the following components:
    Finally, execute the following command to start the Drive-Through application:
 
    ```bash
-   python server.py
-   streamlit run web_site.py   
+   python ~/PycharmProjects/How_I_Built_Simple_BI_Company_w_AI/com/aniket/simple/bi/company/Client_Onboard.py
+   streamlit run Main.py  
    ```
 5. Launch UI at :  http://localhost:8501/
 
