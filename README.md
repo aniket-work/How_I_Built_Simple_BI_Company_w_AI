@@ -95,12 +95,14 @@ The project consists of the following components:
      GROQ_API_KEY=<YOUR_KEY>
      ```
 
-4. **Run the Shipping Application**
+4. **Run the Aniket AI DataInsight Pro Application**
 
-   Finally, execute the following command to start the Drive-Through application:
+   Finally, execute the following command to start the Aniket AI DataInsight Pro application:
 
    ```bash
+   # Run backend service
    python ~/PycharmProjects/How_I_Built_Simple_BI_Company_w_AI/com/aniket/simple/bi/company/Client_Onboard.py
+   # Run UI
    streamlit run Main.py  
    ```
 5. Launch UI at :  http://localhost:8501/
