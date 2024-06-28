@@ -6,6 +6,7 @@ from pandasai import SmartDataframe
 from pandasai.connectors import SqliteConnector
 from langchain_groq.chat_models import ChatGroq
 from dotenv import load_dotenv
+from PIL import Image
 
 # Load environment variables and set constants
 load_dotenv()
@@ -82,6 +83,17 @@ if selected_table:
                 try:
                     response = df_connector.chat(prompt)
                     st.write(response)
+
+                    # Check if a chart was generated
+                    chart_path = "exports/charts/temp_chart.png"
+                    if os.path.exists(chart_path):
+                        # Display the chart in the Streamlit UI
+                        image = Image.open(chart_path)
+                        st.image(image, caption="Generated Chart", use_column_width=True)
+
+                        # Optionally, remove the temporary file after displaying
+                        os.remove(chart_path)
+
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
         else:
